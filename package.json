@@ -13,6 +13,9 @@
     "start:backend": "pnpm --filter @figmamaketest/backend start",
     "db:up": "docker compose -f database/docker-compose.yml up -d",
     "db:down": "docker compose -f database/docker-compose.yml down",
-    "db:reset": "docker compose -f database/docker-compose.yml down -v && docker compose -f database/docker-compose.yml up -d"
+    "db:reset": "docker compose -f database/docker-compose.yml down -v && docker compose -f database/docker-compose.yml up -d",
+    "deploy:worker": "cd backend && npx wrangler deploy",
+    "deploy:pages": "pnpm run build:frontend && npx wrangler pages deploy frontend/dist --project-name=designer-bookmarks",
+    "deploy": "pnpm run deploy:worker && pnpm run deploy:pages"
   }
 }

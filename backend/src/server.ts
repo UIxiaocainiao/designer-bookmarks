@@ -1,4 +1,3 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { getCustomerSummaries, getInventoryRecords, getSupplierSummaries } from "./data.js";
 import { getDashboardPayload } from "./dashboard.js";
 
@@ -6,32 +5,35 @@ export interface ServerConfig {
   databaseUrl?: string;
 }
 
-function sendJson(response: ServerResponse, statusCode: number, payload: unknown) {
-  response.writeHead(statusCode, {
-    "Content-Type": "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "GET,OPTIONS",
-  });
-  response.end(JSON.stringify(payload, null, 2));
-}
-
-function handleRequest(config: ServerConfig, request: IncomingMessage, response: ServerResponse) {
-  const method = request.method ?? "GET";
-  const url = new URL(request.url ?? "/", "http://localhost");
-
-  if (method === "OPTIONS") {
-    response.writeHead(204, {
+function sendJson(payload: unknown, statusCode = 200) {
+  return new Response(JSON.stringify(payload, null, 2), {
+    status: statusCode,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Allow-Methods": "GET,OPTIONS",
+    },
+  });
+}
+
+function handleRequest(config: ServerConfig, request: Request): Response {
+  const method = request.method;
+  const url = new URL(request.url);
+
+  if (method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "GET,OPTIONS",
+      },
     });
-    response.end();
-    return;
   }
 
   if (method === "GET" && url.pathname === "/api") {
-    sendJson(response, 200, {
+    return sendJson({
       service: "backend",
       endpoints: [
         "/api",
@@ -42,44 +44,45 @@ function handleRequest(config: ServerConfig, request: IncomingMessage, response:
         "/api/customers",
       ],
     });
-    return;
   }
 
   if (method === "GET" && url.pathname === "/api/health") {
-    sendJson(response, 200, {
+    return sendJson({
       status: "ok",
       databaseConfigured: Boolean(config.databaseUrl),
       timestamp: new Date().toISOString(),
     });
-    return;
   }
 
   if (method === "GET" && url.pathname === "/api/dashboard") {
-    sendJson(response, 200, getDashboardPayload());
-    return;
+    return sendJson(getDashboardPayload());
   }
 
   if (method === "GET" && url.pathname === "/api/inventory") {
-    sendJson(response, 200, getInventoryRecords());
-    return;
+    return sendJson(getInventoryRecords());
   }
 
   if (method === "GET" && url.pathname === "/api/suppliers") {
-    sendJson(response, 200, getSupplierSummaries());
-    return;
+    return sendJson(getSupplierSummaries());
   }
 
   if (method === "GET" && url.pathname === "/api/customers") {
-    sendJson(response, 200, getCustomerSummaries());
-    return;
+    return sendJson(getCustomerSummaries());
   }
 
-  sendJson(response, 404, {
-    error: "NOT_FOUND",
-    message: `Cannot ${method} ${url.pathname}`,
-  });
+  return sendJson(
+    {
+      error: "NOT_FOUND",
+      message: `Cannot ${method} ${url.pathname}`,
+    },
+    404,
+  );
 }
 
-export function createAppServer(config: ServerConfig) {
-  return createServer((request, response) => handleRequest(config, request, response));
+export function createFetchHandler(config: ServerConfig) {
+  return {
+    fetch(request: Request): Response {
+      return handleRequest(config, request);
+    },
+  };
 }
