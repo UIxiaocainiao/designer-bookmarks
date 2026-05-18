@@ -2,5 +2,9 @@ name = "designer-bookmarks-api"
 main = "src/index.ts"
 compatibility_date = "2025-05-18"
 
-# 部署到 api.designnest.ccwu.cc
-# 需先在 Cloudflare Dashboard 添加此 Worker 的自定义域名
+workers_dev = true
+
+# 绑定自定义域名 api.designnest.ccwu.cc
+[[routes]]
+pattern = "api.designnest.ccwu.cc/*"
+zone_name = "designnest.ccwu.cc"
