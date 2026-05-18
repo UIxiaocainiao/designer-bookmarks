@@ -1,198 +1,112 @@
-# 进销存管理系统 (Inventory Management System)
+# DesignNest
 
-基于 **Figma 设计系统**打造的现代化进销存管理系统，采用前后端分离架构。
+创意技能浏览器 —— 发现、管理和使用 AI 创意工具的统一入口。
 
-## 📁 项目结构
+**线上地址**: [designnest.ccwu.cc](https://designnest.ccwu.cc)
+
+## 项目结构
 
 ```
 .
-├── frontend/          # 前端应用
+├── frontend/               # React SPA 前端
 │   ├── src/
-│   │   ├── app/      # 应用页面组件
-│   │   ├── components/ui/  # shadcn/ui 组件库
-│   │   ├── hooks/    # React Hooks
-│   │   ├── lib/      # 工具函数
-│   │   └── styles/   # 样式文件
-│   └── ...配置文件
+│   │   ├── app/            # 页面组件 (App.tsx)
+│   │   ├── components/ui/  # shadcn/ui 组件 (56+)
+│   │   ├── hooks/          # 自定义 Hooks
+│   │   ├── lib/            # 工具函数
+│   │   └── styles/         # Tailwind + 主题样式
+│   ├── public/             # 静态资源 + Cloudflare _headers
+│   └── vite.config.ts
 │
-├── backend/           # 后端应用（预留）
-│   └── src/
+├── functions/api/          # Cloudflare Pages Functions (API 路由)
+│   ├── _middleware.ts      # CORS 处理
+│   ├── _data.ts            # 数据定义 + 查询函数
+│   ├── _dashboard.ts       # 仪表盘聚合逻辑
+│   └── *.ts                # 各 API 端点
 │
-├── skills/            # 技能和指南文档
-│   └── SKILL.md
+├── backend/                # Cloudflare Worker (独立部署，备用)
+│   ├── src/                # Worker 源码
+│   └── wrangler.toml       # Worker 部署配置
 │
-├── docs/              # 项目文档
-│   ├── DESIGN.md
-│   ├── PROJECT_SUMMARY.md
-│   ├── FEATURES.md
-│   ├── FIGMA_MIGRATION.md
-│   └── SKILLS_GUIDE.md
+├── database/               # 本地 PostgreSQL 开发环境
+│   ├── docker-compose.yml
+│   ├── schema.sql
+│   └── seed.sql
 │
-└── README.md          # 本文件
+├── ship.sh                 # 一键提交 + 部署脚本
+├── package.json            # pnpm workspace 根配置
+└── pnpm-workspace.yaml
 ```
 
-## 🎯 技术栈
+## 技术栈
 
-### 前端 (Frontend)
-- **框架**: React 18.3.1 + TypeScript
-- **路由**: React Router 7.13.0
-- **样式**: Tailwind CSS 4.1.12
-- **组件库**: shadcn/ui (base-nova preset) - **默认组件库**
-- **设计系统**: Figma Design System
-- **字体**: Inter Variable + JetBrains Mono
-- **构建工具**: Vite 6.3.5
+| 层 | 技术 |
+|---|---|
+| 前端 | React 18 + TypeScript + Vite 6 |
+| 样式 | Tailwind CSS 4 + shadcn/ui |
+| API | Cloudflare Pages Functions |
+| 部署 | Cloudflare Pages + Workers |
+| 数据库 (本地) | PostgreSQL 16 (Docker) |
+| 包管理 | pnpm (workspace monorepo) |
 
-### 后端 (Backend)
-- 待实现（可选技术栈：Node.js/Express, Prisma, PostgreSQL）
+## 快速开始
 
-## 🚀 快速开始
-
-### 安装依赖
 ```bash
+# 安装依赖
 pnpm install
+
+# 启动前端开发服务器
+pnpm run dev:frontend
+
+# 启动后端开发服务器 (本地 Node.js)
+pnpm run dev:backend
+
+# 启动本地数据库
+pnpm run db:up
 ```
 
-### 开发模式
+## 部署
+
+修改代码后，一条命令完成提交 + 推送 + 部署：
+
 ```bash
-pnpm run dev
+./ship.sh "你的提交信息"
 ```
 
-### 构建生产版本
+或者分步操作：
+
 ```bash
-pnpm run build
+git add -A
+git commit -m "改动说明"
+git push origin main
+pnpm run deploy          # 构建前端 + 上传到 Cloudflare Pages
 ```
 
-## 🎨 设计系统
+## API 端点
 
-本项目使用 **Figma 设计系统**：
+所有接口在 `https://designnest.ccwu.cc/api` 下：
 
-- **颜色**: 纯黑白界面 (#000000, #ffffff)
-- **字体**: Inter Variable (变量字重 320-700)
-- **组件**: shadcn/ui (56+ 专业组件)
-- **特色**: pill 按钮、虚线焦点轮廓、负字间距
+| 端点 | 说明 |
+|---|---|
+| `/api` | 服务列表 |
+| `/api/health` | 健康检查 |
+| `/api/dashboard` | 仪表盘数据 |
+| `/api/inventory` | 库存记录 |
+| `/api/suppliers` | 供应商摘要 |
+| `/api/customers` | 客户摘要 |
 
-详见: [docs/DESIGN.md](docs/DESIGN.md)
+本地开发时，Vite 将 `/api` 请求代理到 `http://localhost:3001`。
 
-## 📦 组件库使用规范
+## Git 子模块
 
-### 默认使用 shadcn/ui
+项目包含以下设计资源子模块：
 
-**本项目默认使用 shadcn/ui 组件库，所有新功能开发必须优先使用 shadcn/ui 组件。**
+- `awesome-design-md/` — 品牌设计语言 Markdown 集合
+- `design.md/` — design.md CLI 工具
+- `MeiGen-AI-Design-MCP/` — AI 设计 MCP 服务器
 
-#### 安装新组件
+克隆后需初始化子模块：
+
 ```bash
-pnpm dlx shadcn@latest add [component-name]
+git submodule update --init --recursive
 ```
-
-#### 已安装组件
-查看 `frontend/src/components/ui/` 目录，包含 56+ 组件：
-- button, dialog, input, label, table
-- card, badge, avatar, dropdown-menu
-- toast, alert, tabs, accordion
-- 等等...
-
-#### 使用示例
-```tsx
-import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
-
-// Figma 样式的 pill 按钮
-<Button className="figma-pill">
-  点击我
-</Button>
-```
-
-## 🔧 开发规范
-
-### 组件开发
-1. ✅ **优先使用** shadcn/ui 组件
-2. ✅ 遵循 Figma 设计系统
-3. ✅ 使用 TypeScript 类型
-4. ❌ **不要**创建自定义基础组件
-
-### 样式规范
-1. 使用 Tailwind CSS 类
-2. 使用预定义工具类:
-   - `.figma-pill` - Figma 风格按钮
-   - `.figma-card` - 卡片容器
-   - `.figma-mono-label` - 等宽标签
-3. 内联样式用于字重和字间距:
-   ```tsx
-   <h1 style={{ fontWeight: 400, letterSpacing: '-1.72px' }}>
-   ```
-
-### 代码风格
-- 文件命名: PascalCase (Dashboard.tsx)
-- 组件命名: 与文件名一致
-- 导出: 命名导出 `export function ComponentName()`
-
-## 📚 文档
-
-- [项目总结](docs/PROJECT_SUMMARY.md) - 完整项目概述
-- [功能特性](docs/FEATURES.md) - 功能列表
-- [设计系统](docs/DESIGN.md) - Figma 设计规范
-- [迁移指南](docs/FIGMA_MIGRATION.md) - Bugatti → Figma 迁移
-- [技能指南](docs/SKILLS_GUIDE.md) - 全栈开发技能
-
-## 🎓 学习资源
-
-### shadcn/ui
-- 官网: https://ui.shadcn.com
-- 组件文档: https://ui.shadcn.com/docs/components
-- 主题定制: https://ui.shadcn.com/themes
-
-### Figma Design System
-- 参考: [docs/DESIGN.md](docs/DESIGN.md)
-- 字体: Inter Variable, JetBrains Mono
-- 原则: 极简、黑白、变量字重
-
-## 🏗️ 功能模块
-
-### 已实现
-- ✅ 仪表板 (Dashboard)
-- ✅ 库存管理 (Inventory) - 完整 CRUD
-- ✅ 进货管理 (Purchase)
-- ✅ 销售管理 (Sales)
-- ✅ 供应商管理 (Suppliers)
-- ✅ 客户管理 (Customers)
-- ✅ 报表统计 (Reports)
-
-### 计划中
-- ⏳ 后端 API (Node.js + Express)
-- ⏳ 数据库集成 (Prisma + PostgreSQL)
-- ⏳ 用户认证 (JWT)
-- ⏳ 数据持久化
-
-## 🤝 贡献指南
-
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
-### 提交规范
-```
-feat: 新功能
-fix: 修复
-docs: 文档
-style: 样式
-refactor: 重构
-test: 测试
-chore: 构建/工具
-```
-
-## 📝 许可证
-
-MIT License
-
-## 📧 联系方式
-
-项目维护者: [您的名字]
-邮箱: [您的邮箱]
-
----
-
-**设计灵感** 🎨 Figma Design System
-**开发时间** ⏱️ 2026-04-22
-**技术栈** 💻 React + TypeScript + Tailwind + shadcn/ui
